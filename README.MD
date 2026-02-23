@@ -1,5 +1,16 @@
 # BE dev using Kotlin and SpringBoot
+![Kotlin](https://img.shields.io/badge/kotlin-rebeccapurple.svg?style=for-the-badge&logo=kotlin&logoColor=white) ![Kotlin](https://img.shields.io/badge/springboot-darkgreen.svg?style=for-the-badge&logo=springBoot&logoColor=white)
+
+### **Index**
+1. [**Language & Design patterns**](./notes/language-fundamentals-and-design-pattern/README.MD)
 
 ---
 
+## **Contact**
+
+**[LinkedIn](https://www.linkedin.com/in/duc-pham-b19b66351/)  
+[Mail](mailto:ducpv.contact@gmail.com)  
+[Instagram](https://www.instagram.com/vduczz/)**
+
+---
 #vduczz
