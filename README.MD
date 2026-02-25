@@ -6,6 +6,7 @@
 
 1. [**Language & Design patterns**](./notes/language-fundamentals-and-design-pattern/README.MD)
 2. [**Project initialization using _Spring Initializr_**](./notes/setup-spring-project/README.md)
+3. [**Spring & IoC**](./notes/spring-ioc/README.md)
 
 ---
 
