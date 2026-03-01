@@ -11,20 +11,24 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 @Table(name = "reactions")
 @EntityListeners(AuditingEntityListener::class)
 class Reaction(
-        @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
-        @field:Column(name = "id", nullable = false)
-        val id: UUID? = null,
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @field:Column(name = "id", nullable = false)
+    var id: UUID? = null,
 
-        // User 1 - N Reaction
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "user_id", nullable = false)
-        var user: User,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reaction_type", nullable = false, length = 20)
+    var reactionType: ReactionType = ReactionType.LIKE,
 
-        // Post 1 - N Reaction
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "post_id", nullable = false)
-        var post: Post,
+    // User 1 - N Reaction
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    var user: User,
+
+    // Post 1 - N Reaction
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    var post: Post,
 ) {
     // ------------------------------------------------------------
     // data class method
@@ -42,5 +46,11 @@ class Reaction(
     @Column(name = "created_at", updatable = false, nullable = false)
     var createdAt: LocalDateTime? = null
 
-    @LastModifiedDate @Column(name = "updated_at") var updatedAt: LocalDateTime? = null
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    var updatedAt: LocalDateTime? = null
+}
+
+enum class ReactionType {
+    LIKE, LOVE, ANGRY, HAHA, SAD
 }

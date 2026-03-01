@@ -35,6 +35,16 @@ dependencies {
     // flyway
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-mysql")
+
+    // Spring Devtools
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    // RESTful API
+    implementation("org.springframework.boot:spring-boot-starter-web") // web server
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin") // JSON
+    implementation("org.springframework.boot:spring-boot-starter-validation") // data-validation
+    // Swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
 }
 
 kotlin {

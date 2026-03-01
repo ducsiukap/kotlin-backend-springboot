@@ -13,34 +13,47 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener::class)
 class User(
-        @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
-        @Column(name = "id", updatable = false, nullable = false)
-        var id: UUID? = null,
-        @Column(name = "first_name", nullable = false, length = 150) var firstName: String,
-        @Column(name = "last_name", nullable = false, length = 50) var lastName: String,
-        @Column(length = 50) var email: String,
-        @Column(name = "day_of_birth", nullable = false) var dayOfBirth: LocalDate,
-        @Enumerated(EnumType.STRING)
-        @Column(nullable = false, length = 20)
-        var status: UserStatus = UserStatus.INACTIVE,
-        @Column(nullable = false, length = 50) var username: String,
-        @Column(nullable = false, length = 50) var password: String,
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false)
+    var id: UUID? = null,
 
-        // ------------------------------------------------------------
-        // references to user's posts
-        @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-        var posts: MutableList<Post> = mutableListOf(),
+    @Column(name = "first_name", nullable = false, length = 150)
+    var firstName: String,
 
-        // ------------------------------------------------------------
-        // user's reactions
-        @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-        var reactions: MutableList<Reaction> = mutableListOf(),
+    @Column(name = "last_name", nullable = false, length = 50)
+    var lastName: String,
 
-        // ------------------------------------------------------------
-        // user's comment
-        @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-        var comments: MutableList<Comment> = mutableListOf(),
+    @Column(length = 50)
+    var email: String,
+
+    @Column(name = "day_of_birth", nullable = false)
+    var dayOfBirth: LocalDate,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    var status: UserStatus = UserStatus.INACTIVE,
+
+    @Column(nullable = false, length = 50)
+    var username: String,
+
+    @Column(nullable = false, length = 50)
+    var password: String,
+
+    // ------------------------------------------------------------
+    // references to user's posts
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var posts: MutableList<Post> = mutableListOf(),
+
+    // ------------------------------------------------------------
+    // user's reactions
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var reactions: MutableList<Reaction> = mutableListOf(),
+
+    // ------------------------------------------------------------
+    // user's comment
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var comments: MutableList<Comment> = mutableListOf(),
 ) {
     // ------------------------------------------------------------
     @get:Transient // transient
@@ -49,15 +62,17 @@ class User(
 
     @get:Transient
     val age: Int
-        get() = Period.between(LocalDate.now(), dayOfBirth).years
+        get() = Period.between(dayOfBirth, LocalDate.now()).years
 
     // ------------------------------------------------------------
     // auto-auditing
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
-    var createdAt: LocalDateTime? = null
+    var createdAt: LocalDateTime?=null
 
-    @LastModifiedDate @Column(name = "updated_at") var updatedAt: LocalDateTime? = null
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    var updatedAt: LocalDateTime? = null
 
     // ------------------------------------------------------------
     // data class methods

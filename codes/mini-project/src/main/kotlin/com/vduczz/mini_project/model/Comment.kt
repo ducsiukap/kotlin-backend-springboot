@@ -11,20 +11,24 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 @Table(name = "comments")
 @EntityListeners(AuditingEntityListener::class)
 class Comment(
-        @Id @GeneratedValue(strategy = GenerationType.UUID) var id: UUID? = null,
-        @Column(nullable = false, columnDefinition = "TEXT") var content: String,
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    var id: UUID? = null,
 
-        // ------------------------------------------------------------
-        // comment's owner (user)
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "user_id", nullable = false)
-        var user: User,
+    @Column(nullable = false, columnDefinition = "TEXT")
+    var content: String,
 
-        // ------------------------------------------------------------
-        // comment at post
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "post_id", nullable = false)
-        var post: Post,
+    // ------------------------------------------------------------
+    // comment's owner (user)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    var user: User,
+
+    // ------------------------------------------------------------
+    // comment at post
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    var post: Post,
 ) {
     // ------------------------------------------------------------
     // data class method
@@ -42,5 +46,7 @@ class Comment(
     @Column(name = "created_at", updatable = false, nullable = false)
     var createdAt: LocalDateTime? = null
 
-    @LastModifiedDate @Column(name = "updated_at") var updatedAt: LocalDateTime? = null
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    var updatedAt: LocalDateTime? = null
 }
