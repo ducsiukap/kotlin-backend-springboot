@@ -45,6 +45,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation") // data-validation
     // Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+
+    // Spring security
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    // JWT -> jjwt
+    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+    implementation("io.jsonwebtoken:jjwt-impl:0.13.0")
+    implementation("io.jsonwebtoken:jjwt-jackson:0.13.0") // JSON parse
 }
 
 kotlin {
