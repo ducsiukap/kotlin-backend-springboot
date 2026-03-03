@@ -15,6 +15,7 @@
 4. [**Database & ORM**](./notes/database-orm/README.md)
 5. [**RESTful APIs building with Spring Boot**](./notes/restful-api/README.md)
 6. [**Spring _Security_**](./notes/spring-security/README.md)
+7. [**Optimization**](./notes/optimization/README.md)
 
 ---
 
