@@ -61,4 +61,9 @@ interface UserRepository : JpaRepository<User, UUID>, JpaSpecificationExecutor<U
         keyword: String,
         pageable: Pageable // enable pageable
     ): Page<User> // trả về Page
+
+    // ============================================================
+    // Spring Security
+    // + hàm tìm kiếm theo credential (username, email, ..)
+    fun findByUsername(username: String): User?
 }

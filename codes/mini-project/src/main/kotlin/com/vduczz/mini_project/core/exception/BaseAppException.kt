@@ -16,10 +16,11 @@ abstract class BaseAppException(
 // Custom Exception
 // -> nên tạo class mới cho từng loại exception / group of exceptions
 class UserNotFoundException(
-    id: UUID
+    val field: String = "id",
+    val value: Any
 ) : BaseAppException(
     httpStatus = HttpStatus.NOT_FOUND,
-    message = "User not found: id={$id}",
+    message = "User not found: ${field}={$value}",
 )
 
 class InvalidCredentialsException : BaseAppException(

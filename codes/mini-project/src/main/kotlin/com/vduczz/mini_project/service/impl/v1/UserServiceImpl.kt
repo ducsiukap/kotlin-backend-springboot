@@ -110,7 +110,7 @@ class UserServiceImpl(
         return userRepository.findById(id).orElseThrow { // elseOrThrow
             // use custom exception
             // có thể dùng RuntimeException nhưng nên tránh
-            throw UserNotFoundException(id = id)
+            throw UserNotFoundException(value = id)
         }
     }
 
@@ -145,7 +145,7 @@ class UserServiceImpl(
 
         //
         val deletedUser = userRepository.findById(id).orElseThrow {
-            throw UserNotFoundException(id = id)
+            throw UserNotFoundException(value = id)
         }
 
         userRepository.delete(deletedUser)
