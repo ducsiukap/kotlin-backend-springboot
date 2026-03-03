@@ -15,6 +15,9 @@ import com.vduczz.mini_project.repository.UserRepository
 import com.vduczz.mini_project.repository.specification.UserSpecification
 import com.vduczz.mini_project.repository.specification.toSpecification
 import com.vduczz.mini_project.service.UserService
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.Caching
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
@@ -32,11 +35,13 @@ class UserServiceImpl(
 
     // ------------------------------------------------------------
     // CRUD basic
-
     // ------------------------------------------------------------
     // Manual pagination
     // search user by fullName
     @Transactional(readOnly = true)
+    // ------------------------------------------------------------
+    // redis cache
+    // @Cacheable(value = ["list_users"], key = "#page") // cache theo từng page
     override fun getListUsers(
         keyword: String?,
         page: Int,
@@ -71,6 +76,14 @@ class UserServiceImpl(
 
     // ------------------------------------------------------------
     // Dynamic Filtering & Pagination
+    // ------------------------------------------------------------
+    // redis cache
+    //  + first-request: 1.69s
+    //  + the second: 21ms
+    // @Cacheable(value = ["list_users"], key = "#filter.toString()")
+    // nếu method chỉ có 1 param, chỉ cần:
+    @Cacheable("list_users")
+    // cache với key=page
     @Transactional(readOnly = true)
     override fun getListUsers(
         filter: UserFilterCommand
@@ -104,6 +117,7 @@ class UserServiceImpl(
 
     // Read
     @Transactional(readOnly = true)
+    @Cacheable(value = ["users"], key = "#id") // cache user theo id
     override fun getDetailUser(id: UUID): User {
         // Nếu không thấy -> throw exception
         // không nên return null
@@ -140,6 +154,18 @@ class UserServiceImpl(
     }
 
     // D
+    // ------------------------------------------------------------
+    // redis cache
+    // -> xóa cache
+    // @CacheEvict(value = ["users"], key = "#id") // xóa cache khi user yêu cầu xóa
+    @Caching(
+        // kết hợp
+        evict = [
+            CacheEvict(value = ["users"], key = "#id"),
+            CacheEvict(value = ["list_users"], allEntries = true), // xóa toàn bộ
+        ],
+        //cacheable =
+    )
     @Transactional(rollbackFor = [Exception::class])
     override fun deleteUser(id: UUID) {
 

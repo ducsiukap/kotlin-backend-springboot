@@ -55,6 +55,11 @@ dependencies {
 
     // Spring email
     implementation("org.springframework.boot:spring-boot-starter-mail")
+
+    // Cache
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    // redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
 
 

@@ -1,6 +1,7 @@
 # Performance **_Optimization_**
 
 1. [Asynchronous processing](./async-processing/README.md)
+2. [Caching](./cache/README.md)
 
 ---
 
