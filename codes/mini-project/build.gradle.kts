@@ -44,8 +44,16 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin") // JSON
     implementation("org.springframework.boot:spring-boot-starter-validation") // data-validation
     // Swagger
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13") // 3.0.1
+
+    // Spring Security
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    // JWT -> jjwt
+    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0") // JSON parse
 }
+
 
 kotlin {
     compilerOptions {

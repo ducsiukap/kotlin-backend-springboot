@@ -14,6 +14,7 @@
 3. [**Spring & IoC**](./notes/spring-ioc/README.md)
 4. [**Database & ORM**](./notes/database-orm/README.md)
 5. [**RESTful APIs building with Spring Boot**](./notes/restful-api/README.md)
+6. [**Spring _Security_**](./notes/spring-security/README.md)
 
 ---
 
