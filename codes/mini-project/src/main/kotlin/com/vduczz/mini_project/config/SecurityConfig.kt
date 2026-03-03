@@ -39,8 +39,8 @@ class SecurityConfig(
                 // note: authorizeHttpRequests áp dụng rule: Top-Down Execution
                 //  -> match cái nào trước dùng cái đó, bỏ qua các matcher bên dưới
                 //      so the flow should be:
-                //          + uri that can .permitAll() at the first
-                //          + uri that requires full-auth (authen + author) at the second
+                //          + uri that can .permitAll() (do not require authentication) at the first
+                //          + uri that requires full-auth (authen + specific authorize) at the second
                 //          + uri requires authentication only at the last
                 auth
                     // .requestMatchers -> match url
@@ -50,14 +50,20 @@ class SecurityConfig(
                         "/api/v1/auth/**",
 
                         // Swagger
+                        //  + springdoc-openapi cũng expose /v3/api-docs
+                        //      thông qua một @RestController.
+                        //  + nếu có config prefix url trong /config/WebConfig.kt
+                        //      cho @RestController:
+                        //          configurer.addPathPrefix(
+                        //              "/api/v1", // uri-prefix
+                        //              HandlerTypePredicate.forAnnotation(RestController::class.java)
+                        //          )
+                        //  thì swagger api-docs lưu tại /api/v1/v3/api-docs chứ không phải /v3/api-docs
+//                        "/api/v1/v3/api-docs",
+//                        "/api/v1/v3/api-docs/**",
                         "/v3/api-docs",
                         "/v3/api-docs/**",
-                        "/swagger-resources",
-                        "/swagger-resources/**",
-                        "/configuration/ui",
-                        "/configuration/security",
                         "/swagger-ui/**",
-                        "/webjars/**",
                         "/swagger-ui.html",
 
                         // endpoint cho error
@@ -65,9 +71,8 @@ class SecurityConfig(
                     ).permitAll() // .permitAll() bypass toàn bộ
                     // -> không yêu cầu auth (no-authen & no-author)
 
-
                     // ------------------------------------------------------------
-                    // require both authentication & authorization
+                    // require both authentication & specific-authorization
                     // .hasRole() / .hasAnyRole() at the second
                     // RBAC - role-based access control
                     // -> phân quyền truy cập dựa vào role

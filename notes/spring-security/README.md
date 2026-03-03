@@ -1,7 +1,7 @@
 # Spring **_Security_**
 
 1. [Spring Security, Authentication, Authorization & JWT Authentication](./SpringSecurity.md)
-2. [Spring security & JWT authentication implementation](./SpirngSecurityImpl.md)
+2. [Spring security & JWT authentication implementation](./SpringSecurityImpl.md)
 
 ---
 

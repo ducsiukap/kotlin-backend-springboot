@@ -48,7 +48,7 @@ class User(
     @get:JvmName("getDbUsername")
     var username: String,
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     @get:JvmName("getDbPassword") // tương tự username
     var password: String,
 
@@ -156,7 +156,9 @@ class User(
 
     // đưa logic về trạng thái tài khoản vào isEnabled
     override fun isEnabled(): Boolean {
-        return this.status == UserStatus.ACTIVED
+        // INACTIVED -> active later
+
+        return this.status != UserStatus.BANNED
     }
 }
 

@@ -29,7 +29,7 @@ class AuthController(
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping
+    @PostMapping("/login")
     fun login(
         @Valid
         @RequestBody
