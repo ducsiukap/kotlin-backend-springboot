@@ -60,6 +60,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-cache")
     // redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // Rate limiting
+    // Thư viện Rate Limiting lõi
+    implementation("com.bucket4j:bucket4j_jdk17-core:8.16.1")
+    // Thư viện giúp Bucket4j nói chuyện được với Redis (qua Lettuce)
+    implementation("com.bucket4j:bucket4j_jdk17-lettuce:8.16.1")
 }
 
 

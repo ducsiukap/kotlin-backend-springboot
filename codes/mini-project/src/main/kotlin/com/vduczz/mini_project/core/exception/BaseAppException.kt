@@ -20,7 +20,7 @@ class UserNotFoundException(
     val value: Any
 ) : BaseAppException(
     httpStatus = HttpStatus.NOT_FOUND,
-    message = "User not found: ${field}={$value}",
+    message = "User not found: ${field}=$value",
 )
 
 class InvalidCredentialsException : BaseAppException(

@@ -2,6 +2,8 @@
 
 1. [Asynchronous processing](./async-processing/README.md)
 2. [Caching](./cache/README.md)
+3. [Rate Limiting](./RateLimiting.md)
+
 
 ---
 
