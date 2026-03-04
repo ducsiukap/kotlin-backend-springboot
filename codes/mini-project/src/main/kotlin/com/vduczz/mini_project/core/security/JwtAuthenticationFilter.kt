@@ -33,7 +33,7 @@ class JwtAuthenticationFilter(
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
         val path = request.servletPath
 
-        return path.startsWith("/api/v1/auth")
+        return path.startsWith("/api/v1/auth") || path.startsWith("/actuator")
     }
 
     // filter-internal

@@ -66,6 +66,9 @@ dependencies {
     implementation("com.bucket4j:bucket4j_jdk17-core:8.16.1")
     // Thư viện giúp Bucket4j nói chuyện được với Redis (qua Lettuce)
     implementation("com.bucket4j:bucket4j_jdk17-lettuce:8.16.1")
+
+    // Actuator
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 }
 
 

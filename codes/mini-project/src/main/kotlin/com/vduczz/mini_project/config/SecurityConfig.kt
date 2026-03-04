@@ -66,6 +66,9 @@ class SecurityConfig(
                         "/swagger-ui/**",
                         "/swagger-ui.html",
 
+                        // Actuator
+                        "/actuator/health",
+
                         // endpoint cho error
                         "/error"
                     ).permitAll() // .permitAll() bypass toàn bộ
@@ -79,7 +82,9 @@ class SecurityConfig(
                     //      => yêu cầu chỉ có một or một vài role cụ thể được phép truy cập vào resources
                     //  + config in SecurityConfig
                     //      -> .requestMatchers().hasRole() / .requestMatchers().hasAnyRole()
-                    .requestMatchers("/api/v1/admin/**")
+                    .requestMatchers(
+                        "/api/v1/admin/**",
+                        "/actuator/**")
                     .hasRole(UserRoles.ADMIN.name) // only token has authorizes including "ROLE_ADMIN" can be accepted
                     // or .hasAnyRow(UserRoles.ADMIN.name, UserRoles.USER.name, ...) -> accessible for multiple roles
 

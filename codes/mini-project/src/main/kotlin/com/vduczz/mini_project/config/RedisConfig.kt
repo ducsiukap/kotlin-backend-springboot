@@ -1,5 +1,6 @@
 package com.vduczz.mini_project.config
 
+import org.slf4j.LoggerFactory
 import org.springframework.cache.Cache
 import org.springframework.cache.annotation.CachingConfigurer
 import org.springframework.cache.annotation.EnableCaching
@@ -19,6 +20,12 @@ import java.time.Duration
 @EnableCaching // required => cho phép Caching toàn app
 class RedisConfig : CachingConfigurer {
     // extends CachingConfigurer để hỗ trợ errorHandler
+
+    // ============================================================
+    // Logger riêng của class
+    private val log = LoggerFactory.getLogger(RedisConfig::class.java)
+    // ============================================================
+
 
     // Redis cache config
     // common config for all table
@@ -80,19 +87,27 @@ class RedisConfig : CachingConfigurer {
 
             override fun handleCacheGetError(exception: RuntimeException, cache: Cache, key: Any) {
                 //log
-                println("[CacheErrorHandler] GET error: ${exception.message}")
+                // println("[CacheErrorHandler] GET error: ${exception.message}")
+
+                // ============================================================
+                // -> sử dụng Logger
+                log.error("GET error: ${exception.message}")
             }
 
             override fun handleCachePutError(exception: RuntimeException, cache: Cache, key: Any, value: Any?) {
-                println("[CacheErrorHandler] PUT error: ${exception.message}")
+                // println("[CacheErrorHandler] PUT error: ${exception.message}")
+                log.error("PUT error: ${exception.message}")
             }
 
             override fun handleCacheEvictError(exception: RuntimeException, cache: Cache, key: Any) {
-                println("[CacheErrorHandler] EVICT error: ${exception.message}")
+                // println("[CacheErrorHandler] EVICT error: ${exception.message}")
+                log.error("EVICT error: ${exception.message}")
             }
 
             override fun handleCacheClearError(exception: RuntimeException, cache: Cache) {
-                println("[CacheErrorHandler] CLEAR error: ${exception.message}")
+                // println("[CacheErrorHandler] CLEAR error: ${exception.message}")
+                log.error("CLEAR error: ${exception.message}")
+
             }
         }
     }
