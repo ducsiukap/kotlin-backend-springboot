@@ -20,7 +20,7 @@ interface UserService {
 
     fun createUser(user: CreateUserCommand): User
 
-    fun deleteUser(id: UUID)
+    fun deleteUser(id: UUID, currentUserUsername: String)
 
     fun updateUser(id: UUID, user: UpdateUserCommand): User
 
