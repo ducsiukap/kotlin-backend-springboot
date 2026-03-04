@@ -141,70 +141,53 @@ details: [config/ApplicationConfig.kd](/codes/mini-project/src/main/kotlin/com/v
   - controller: [AuthController.kt](/codes/mini-project/src/main/kotlin/com/vduczz/mini_project/controller/AuthController.kt)
 
   about **`AUTHORIZATION`**:
-  - **Cách 1**: config ở [config/SecurityConfig.kt](/codes/mini-project/src/main/kotlin/com/vduczz/mini_project/config/SecurityConfig.kt)
+  - **Simple Authorize** - RBAC:
+    - **Cách 1**: config ở [config/SecurityConfig.kt](/codes/mini-project/src/main/kotlin/com/vduczz/mini_project/config/SecurityConfig.kt)
 
-    ```kotlin
-    // use:
-    http.authorizeHttpRequests { auth ->
-      auth
-        .requestMatchers(
-          // urls
-        )
-        .hasRole("ROLE") // for specific role, such as ROLE_USER
-        // or
-        .hasAnyRole("ROLES") // for mutliple roles, such as: ROLE_USER, ROLE_ADMIN
-    }
-    // tuy nhiên, không quá khuyến khích
-    ```
-
-  - **Cách 2**: authorize at `controller` -> `@EnableMethodSecurity` + `@PreAuthorize`:
-
-    ```kotlin
-    // first
-    // at config/SecurityConfig.kt
-    @EnableMethodSecurity // annotation to enable method security
-    SecurityConfig(...) {}
-
-    // second
-    // authorize at controller class
-    // use: @PreAuthorize at top of class/method
-    @PreAuthorize("hasRole(ADMIN)") // require ADMIN-role
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')") // accessible for multiple roles
-    // or SpEL - Spring Expression Language
-    @PreAuthorize("""
-      hasRole('ADMIN')
-      or
-      authentication.principle.id.toString() == #userId
-    """)
-    @PutMapping("/{userId}")
-    // -> role=ADMIN
-    //    hoặc authenticated user có id = chính userId đang request (đúng profile của mình)
-    ```
-
-    or complex authorize:
-
-    ```kotlin
-    // first
-    // custom security checker
-    @Component("customUserSecurityChecker")
-    class CustomSecurityChecker {
-      // checking logic
-      fun canEditPost(authentication: Authentication, postId: UUID) : Boolean {
-
-        // ...
-        val currentUser = authentication.principle as User
-
-        val post = postRepo.findById(postId)
-
-        return post.userId == currentUser.id
+      ```kotlin
+      // use:
+      http.authorizeHttpRequests { auth ->
+        auth
+          .requestMatchers(
+            // urls
+          )
+          .hasRole("ROLE") // for specific role, such as ROLE_USER
+          // or
+          .hasAnyRole("ROLE1", "ROLE2") // for mutliple roles, such as: ROLE_USER, ROLE_ADMIN
       }
-    }
+      // tuy nhiên, không quá khuyến khích
+      ```
 
-    // then,
-    // using checker in controller
-    @PreAuthorize("""
-      @customUserSecurityChecker.canEditPost(authentication, #postId)
-    """)
-    @PutMapping("/{postId}")
-    //...
-    ```
+    - **Cách 2**: authorize at `controller` -> `@EnableMethodSecurity` + `@PreAuthorize`:
+
+      ```kotlin
+      // first
+      // at config/SecurityConfig.kt
+      @EnableMethodSecurity // annotation to enable method security
+      SecurityConfig(...) {}
+
+      // second
+      // authorize at controller class
+      // use: @PreAuthorize at top of class/method
+      @PreAuthorize("hasRole(ADMIN)") // require ADMIN-role
+      @PreAuthorize("hasAnyRole('ADMIN', 'USER')") // accessible for multiple roles
+      // or SpEL - Spring Expression Language
+      @PreAuthorize("""
+        hasRole('ADMIN')
+        or
+        authentication.principle.id.toString() == #userId
+      """)
+      @PutMapping("/{userId}")
+      // -> role=ADMIN
+      //    hoặc authenticated user có id = chính userId đang request (đúng profile của mình)
+      ```
+
+  - **Complex / Data-driven authorization**
+    - **Cách 1**: `@EnableMethodSecurity` + `CustomChecker` + `@PreAuthorize`
+      - enable: `@EnableMethodSecurity` at [/config/SecurityConfig.kt](/codes/mini-project/src/main/kotlin/com/vduczz/mini_project/config/SecurityConfig.kt)
+      - custom checker: [/core/security/checker/UserSecurityChecker.kt](/codes/mini-project/src/main/kotlin/com/vduczz/mini_project/core/security/checker/UserSecurityChecker.kt)
+      - use `@PreAuthorize` at `controller`: [UserController.kt](/codes/mini-project/src/main/kotlin/com/vduczz/mini_project/controller/UserController.kt)
+
+    - **Cách 2**: use `@AuthenticationPrinciple`
+      - service: [UserServiceImple.deleteUser](/codes/mini-project/src/main/kotlin/com/vduczz/mini_project/service/impl/v1/UserServiceImpl.kt)
+      - controller: [UserController.deleteUser](/codes/mini-project/src/main/kotlin/com/vduczz/mini_project/controller/UserController.kt)

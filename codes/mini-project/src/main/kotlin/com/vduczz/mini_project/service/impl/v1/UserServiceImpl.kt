@@ -18,6 +18,7 @@ import com.vduczz.mini_project.service.UserService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.ReflectionUtils
@@ -141,12 +142,17 @@ class UserServiceImpl(
 
     // D
     @Transactional(rollbackFor = [Exception::class])
-    override fun deleteUser(id: UUID) {
+    override fun deleteUser(id: UUID, currentUserUsername: String) {
 
         //
         val deletedUser = userRepository.findById(id).orElseThrow {
-            throw UserNotFoundException(value = id)
+            throw AccessDeniedException("Forbidden")
         }
+
+        // check is current user
+        if (deletedUser.username == currentUserUsername)
+            throw AccessDeniedException("Forbidden")
+        // 403
 
         userRepository.delete(deletedUser)
     }

@@ -18,6 +18,9 @@ import org.springframework.data.web.PageableDefault
 import org.springframework.data.web.SortDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -177,6 +180,13 @@ class UserController(
     @Operation(summary = "Update an user")
     // ------------------------------------------------------------
     // PUT
+    // ------------------------------------------------------------
+    // DATA-driven authorize example
+    //  + use checker
+    @PreAuthorize("@userSecurity.isCurrentUser(#id, authentication.name)")
+    //      + authentication là context có sẵn trong Spring Security -> chứa thông tin auth
+    //          + authentication.name -> username (jwt subject)
+    //          + authentication.principle -> .getPrinciple() -> user (UserDetails)
     @PutMapping("/{id}")
     fun updateUser(
         @PathVariable id: UUID,
@@ -195,11 +205,20 @@ class UserController(
     @Operation(summary = "Delete an user")
     // ------------------------------------------------------------
     // DELETE
+    // ------------------------------------------------------------
+    // DATA-driven authorize example
+    //  + use `@AuthenticationPrinciple
     @DeleteMapping("/{id}")
     fun deleteUser(
-        @PathVariable id: UUID
+        @PathVariable id: UUID,
+
+        // Inject principle (chứa validated-user)
+        @AuthenticationPrincipal validatedUser: UserDetails
+        // có thể cast thẳng sang entity: validatedUser: User
     ): ResponseEntity<Unit> {
-        userService.deleteUser(id)
+
+
+        userService.deleteUser(id, validatedUser.username)
 
         return ResponseEntity.noContent().build()
     }
@@ -207,6 +226,7 @@ class UserController(
     @Operation(summary = "Update partial of user")
     // ------------------------------------------------------------
     // PATCH
+    @PreAuthorize("@userSecurity.isCurrentUser(#id, authentication.name)")
     @PatchMapping("/{id}")
     fun updateUserPartial(
         @PathVariable id: UUID,
