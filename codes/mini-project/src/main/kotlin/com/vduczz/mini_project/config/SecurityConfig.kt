@@ -49,6 +49,8 @@ class SecurityConfig(
                         // Auth API
                         "/api/v1/auth/**",
 
+                        "/api/v1/hello",
+
                         // Swagger
                         //  + springdoc-openapi cũng expose /v3/api-docs
                         //      thông qua một @RestController.
@@ -84,7 +86,8 @@ class SecurityConfig(
                     //      -> .requestMatchers().hasRole() / .requestMatchers().hasAnyRole()
                     .requestMatchers(
                         "/api/v1/admin/**",
-                        "/actuator/**")
+                        "/actuator/**"
+                    )
                     .hasRole(UserRoles.ADMIN.name) // only token has authorizes including "ROLE_ADMIN" can be accepted
                     // or .hasAnyRow(UserRoles.ADMIN.name, UserRoles.USER.name, ...) -> accessible for multiple roles
 

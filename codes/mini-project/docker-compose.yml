@@ -1,0 +1,67 @@
+services:
+  # MySQL
+  ksb-mysql:
+    image: mysql:8.0
+    container_name: ksb-mysql
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      retries: 5
+
+  # Redis
+  ksb-redis:
+    image: redis:latest
+    container_name: ksb-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      retries: 5
+
+  # Application
+  mini-project-app:
+    build: .
+    container_name: mini-project-app
+    # Không cần mở port vì cloudflare đã xử lý
+    #    ports:
+    #      - "8080:8080"
+    environment:
+      # MySQL
+      - SPRING_DATASOURCE_URL=jdbc:mysql://ksb-mysql:3306/${DB_NAME}?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      # Redis
+      - SPRING_DATA_REDIS_HOST=ksb-redis
+      - SPRING_DATA_REDIS_PORT=6379
+      #JWT
+      - APPLICATION_SECURITY_JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      # MAIL
+      - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
+    depends_on:
+      ksb-mysql:
+        condition: service_healthy
+      ksb-redis:
+        condition: service_healthy
+      # -> chỉ start server khi mysql + redis chạy
+  cloudflare:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    depends_on:
+      - mini-project-app
+    restart: unless-stopped
+
+# ổ cứng cho mysql
+volumes:
+  mysql_data:
