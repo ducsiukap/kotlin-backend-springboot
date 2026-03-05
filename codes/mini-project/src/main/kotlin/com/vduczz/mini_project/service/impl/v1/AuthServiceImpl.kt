@@ -8,6 +8,7 @@ import com.vduczz.mini_project.core.security.JwtService
 import com.vduczz.mini_project.dto.response.AuthResponse
 import com.vduczz.mini_project.repository.UserRepository
 import com.vduczz.mini_project.service.AuthService
+import com.vduczz.mini_project.service.NotificationService
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -19,6 +20,11 @@ class AuthServiceImpl(
     private val passwordEncoder: PasswordEncoder,
     private val jwtService: JwtService,
     private val authenticationManager: AuthenticationManager,
+
+    // ------------------------------------------------------------
+    // Inject NotificationService
+    private val notificationService: NotificationService
+
 ) : AuthService {
 
     // ============================================================
@@ -35,6 +41,24 @@ class AuthServiceImpl(
 
         // save to db
         val savedUser = userRepo.save(user)
+
+        // ------------------------------------------------------------
+        // send notification (@Async task)
+        val notiSubject = "Welcome ${savedUser.fullName} to KSB!"
+        val notiPayload = """
+                Hi ${savedUser.username},
+                    
+                Your account has created successfully in KSB system.
+                Note: This email sent automatically from Background Thread (@Async) of Spring Boot!
+                
+                Have a nice day!
+                #vduczz
+            """.trimIndent()
+        // send
+        // @Async task -> chạy ở Thread khác
+        notificationService.notify(savedUser, notiSubject, notiPayload)
+
+        // -> không phải chờ, có thể return ngay
 
         // take jwt-token
         val jwtToken = jwtService.generateToken(userDetails = savedUser)

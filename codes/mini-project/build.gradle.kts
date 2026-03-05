@@ -52,6 +52,23 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0") // JSON parse
+
+    // Spring email
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+
+    // Cache
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    // redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // Rate limiting
+    // Thư viện Rate Limiting lõi
+    implementation("com.bucket4j:bucket4j_jdk17-core:8.16.1")
+    // Thư viện giúp Bucket4j nói chuyện được với Redis (qua Lettuce)
+    implementation("com.bucket4j:bucket4j_jdk17-lettuce:8.16.1")
+
+    // Actuator
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 }
 
 
