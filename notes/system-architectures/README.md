@@ -72,6 +72,8 @@
     └─ Product Service
   ```
 
+  Details: [Microservice Architecture](./microservices/README.md)
+
 - `Event-Driven Architecture` - **Kiến trúc hướng sự kiện**: các thành phần trong hệ thống không gọi nhau trực tiếp, ví dụ qua **API calls**.
 
   Thay vào đó, các block giao tiếp với nhau qua cơ chế:
@@ -127,6 +129,3 @@ Bản chất của `decoupled` là chia application ra làm 2 thành phần:
   Details: [Clean Architecture](./clean/README.md)
 
 - **Hexagonal Architecture**
-- **Microservices Architecture**
-
-  Details: [Microservice Architecture](./microservices/README.md)
