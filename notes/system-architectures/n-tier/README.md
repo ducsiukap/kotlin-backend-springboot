@@ -147,3 +147,4 @@ khi áp dụng **Domain-Driven Design**, application được chia `4-Tier`:
 > _**Tư duy** của `DDD` là **bảo vệ `Domain Model`**, vì vậy có thể linh hoạt bỏ `command` (write-request) /`query` (read-request) ở `/application` và đưa `dto` vào `/application` thay con **command**_
 
 **Sample Project**: [https://github.com/citerus/dddsample-core](https://github.com/citerus/dddsample-core)
+  

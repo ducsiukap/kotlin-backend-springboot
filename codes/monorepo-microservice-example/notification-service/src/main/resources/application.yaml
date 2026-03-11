@@ -1,0 +1,84 @@
+spring:
+  application:
+    name: notification-service
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+  # RabbitMQ
+  rabbitmq:
+    username: admin
+    password: secure_password
+    host: localhost
+    port: 5672
+    # listener config
+    listener:
+      simple:
+        prefetch: 10 # số message chưa ACK tối đa mà RabbitMQ gửi tới Consumer trong 1 thời điểm
+        concurrency: 3 # khởi động 3 thread consumer ngay từ đầu
+        max-concurrency: 10 # tối đa scale lên 10 thread consumer khi tải cao
+        # ACK mode
+        acknowledge-mode: auto
+        # retry
+        retry:
+          enabled: true
+          max-retries: 3 # 1 lần chính thức + tối đa 3 lần retires
+          max-interval: 10000ms # chờ tối đa 10s cho tín hiệu ACK
+          initial-interval: 3000ms # lần đầu, đợi 3s
+          multiplier: 1.5 # những lần sau, thời gian đợi x1.5 so với lần trước (backoff strategy)
+
+
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      # earliest: đọc từ đầu nếu chưa có offset
+      # latest (default): đọc message mới từ khi start
+
+      # group-id
+      group-id: notification-service-group
+        # key-deserializer, value-deserializer, spring.json.trusted.packages, spring.json.type.mapping
+        # đã config trong code
+        # không config trong yaml nữa :)
+        #      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        #      # value-deserializer: org.apache.kafka.common.serialization.StringDeserializer # đọc thành string xong chuyển json sau
+        #      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+
+        #      properties:
+        #        # trust all package => cho phép Jackson deserialize từ bất kì package nào
+        #        spring.json.trusted.packages: "*"
+        # hỗ trợ JsonDeserialize
+        #        spring.json.type.mapping: >
+        #          welcome_mail_message: vduczz.notificationservice.controller.dto.WelcomeMailReques
+        # có thể liệt kê nhiều, sử dụng format:
+        # key:value, key:value, key:value,
+        # với:
+        #   + key thống nhất 2 bên
+      #   + value: đường dẫn tới class
+
+
+    listener:
+      # ack
+      ack-mode: record
+      # record: Commit offset ngay sau khi Listener xử lý xong từng bản ghi.
+      # batch: (default) Commit offset sau khi xử lý xong tất cả bản ghi nhận được từ một lần poll()
+      # time: Commit offset sau khi xử lý xong bản ghi, miễn là đã quá khoảng thời gian ackTime
+      # count: Commit offset khi số lượng bản ghi đã xử lý đạt mức ackCount.
+      # manual: Listener chịu trách nhiệm gọi Acknowledgment.acknowledge(), nhưng Spring sẽ gom lại để commit sau.
+      # manual_immediate: Gọi acknowledge() phát là Spring gửi lệnh commit lên Kafka ngay lập tức (blocking)
+      concurrency: 3 # concurrent consume thread
+      poll-timeout: 3000
+
+server:
+  port: 8081
+
