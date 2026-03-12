@@ -1,6 +1,6 @@
 package vduczz.notificationservice.controller.dto
 
-class WelcomeMailRequest(
+data class WelcomeMailRequest(
     val email: String,
     val name: String
 )
