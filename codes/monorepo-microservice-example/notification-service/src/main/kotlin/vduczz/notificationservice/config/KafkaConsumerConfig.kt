@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
+import org.springframework.kafka.support.converter.StringJacksonJsonMessageConverter
 import org.springframework.kafka.support.mapping.DefaultJacksonJavaTypeMapper
 import org.springframework.kafka.support.mapping.JacksonJavaTypeMapper
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
@@ -14,81 +15,74 @@ import org.springframework.kafka.support.serializer.JacksonJsonDeserializer
 import vduczz.notificationservice.controller.dto.WelcomeMailRequest
 
 @Configuration
-class KafkaConsumerConfig {
-
-    // >>>>>>>>>>>>>>>>>>>>>>>>> Generic Deserializer + TypeMapper <<<<<<<<<<<<<<<<<<<<<<<<< //
-    // ____________________ Khi muốn can thiệp sâu vào consumer ____________________ //
-    // -> cấu hình tương tự bên producer
-
+class KafkaConsumerConfig(
+    private val kafkaProperties: KafkaProperties
+) {
+    // ____________________ Customer TypeMapper (JSON - Deserializer) ____________________ //
     @Bean
-    fun consumerFactory(kafkaProperties: KafkaProperties): ConsumerFactory<String, Any> {
+    fun idMappings(): DefaultJacksonJavaTypeMapper {
+        // Bean tạo TypeMapper
 
-        println("=========> MY consumerFactory LOADED")
+        val typeMapper = DefaultJacksonJavaTypeMapper()
+        typeMapper.typePrecedence = JacksonJavaTypeMapper.TypePrecedence.TYPE_ID
 
-        // Nếu trong code config rồi thì không được khai báo trong application.yaml
-        // ex: value-deserializer , spring.json.use.type.header, spring.json.trusted.packages
-        //      type-mapper, key-serializer
-        val deserializer = JacksonJsonDeserializer<Any>().apply {
-            setUseTypeHeaders(true)
-            addTrustedPackages("*")
-
-            typeMapper = typeMapper()
-        }
-
-        val configProps = kafkaProperties.buildConsumerProperties()
-//        configProps.remove("spring.json.trusted.packages")
-//        configProps.remove("spring.json.use.type.header")
-
-        return DefaultKafkaConsumerFactory<String, Any>(
-            configProps,
-            StringDeserializer(),
-            ErrorHandlingDeserializer(deserializer)
-        )
-    }
-
-    @Bean
-    fun typeMapper(): DefaultJacksonJavaTypeMapper {
-
-        val mappings: MutableMap<String, Class<*>> = HashMap()
+        val mappings = HashMap<String, Class<*>>()
         mappings[KafkaConsumeConstants.UserEvents.EventTypes.USER_CREATED_V1] = WelcomeMailRequest::class.java
 
-        val typeMapper = DefaultJacksonJavaTypeMapper().apply {
-            typePrecedence = JacksonJavaTypeMapper.TypePrecedence.TYPE_ID
-            idClassMapping = mappings
-        }
-
+        typeMapper.idClassMapping = mappings
+        typeMapper.addTrustedPackages("*")
         return typeMapper
     }
 
     @Bean
-    // Bean ép KafkaListenerContainerFactory dùng consumerFactory bên trên :)
-    fun kafkaListenerContainerFactory(
-        consumerFactory: ConsumerFactory<String, Any>
-    ): ConcurrentKafkaListenerContainerFactory<String, Any> {
-        val factory = ConcurrentKafkaListenerContainerFactory<String, Any>()
-        factory.setConsumerFactory(consumerFactory)
-        return factory
+    fun consumerFactory(): ConsumerFactory<String, Any> {
+        // Bean custom ConsumerFactory
+        // gắn TypeMapper vào ConsumerFactory
+
+        // auto-config Kafka properties for consumer
+        val configProps = kafkaProperties.buildConsumerProperties()
+
+        // init deserializer
+        val deserializer = JacksonJsonDeserializer<Any>();
+        deserializer.typeMapper = idMappings() // spring.json.type.mapping
+        // trong TypeMapper đã config setTrustedPackages sẵn // spring.json.trusted.packages
+        deserializer.setUseTypeHeaders(true) // spring.json.use.type.headers
+        // cần xóa auto-config để tránh conflict
+        configProps.remove("spring.json.use.type.headers");
+        configProps.remove("spring.json.type.mapping");
+        configProps.remove("spring.json.trusted.packages");
+
+        return DefaultKafkaConsumerFactory<String, Any>(
+            configProps,
+            StringDeserializer(),
+            deserializer,
+        )
     }
 
-    // khi chỉ muốn can thiệp TypeMapper + Deserializer / Serializer
 
+    // tùy chỉnh config ListenerContainer
+    @Bean
+    fun kafkaListenerContainerFactory(
+        // những thứ đã config trong yaml
+        // vì đã custom nên nó sẽ inject consumerFactory bên trên
+        consumerFactory: ConsumerFactory<String, Any>
+    ): ConcurrentKafkaListenerContainerFactory<String, Any> {
 
-    // @Bean
-    // sử dụng Kafka RecordMessageConverter //
-    // Spring sẽ xử lý phần Error Handling và Conversion
-    // một cách thông minh hơn ở tầng cao .// khi này cần set value deserializer là StringDeserializer
-    //    fun kafkaJsonMessageConverter(): RecordMessageConverter {
-    //        val converter = JacksonJsonMessageConverter()
-    //        val typeMapper = DefaultJacksonJavaTypeMapper()
-    //
-    //        typeMapper.typePrecedence = JacksonJavaTypeMapper.TypePrecedence.TYPE_ID
-    //
-    //        // id mapping
-    //        val mappings = HashMap<String, Class<*>>()
-    //        mappings[KafkaConsumeConstants.UserEvents.EventTypes.USER_CREATED_V1] = WelcomeMailRequest::class.java
-    //
-    //        typeMapper.idClassMapping = mappings
-    //        converter.typeMapper = typeMapper
-    //        return converter
-    //    }
+        val factory = ConcurrentKafkaListenerContainerFactory<String, Any>()
+
+        // gắn consumer factory
+        factory.setConsumerFactory(consumerFactory)
+
+        // thêm các cấu hình nâng cao
+        // hoặc tùy chỉnh các cấu hình
+        factory.setConcurrency(3) // thread consumer concurrency
+
+        // convert string -> JSON (for String Deserializer)
+        //        factory.setRecordMessageConverter(
+        //            // sử dụng có sẵn của spring
+        //            StringJacksonJsonMessageConverter()
+        //        )
+
+        return factory
+    }
 }

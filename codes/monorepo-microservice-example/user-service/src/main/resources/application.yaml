@@ -8,7 +8,7 @@ spring:
 
   # Database
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&createDatabaseIfNotExist=true
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&createDatabaseIfNotExist=true
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -36,19 +36,20 @@ spring:
 
   # kafka
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:9094
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # Java Object -> JSON
-      acks: all # đảm bảo tất cả các replica xác nhận
-      retries: 3 # tự retry khi fail
-      batch-size: 16384 # gom batch trước khi gửi // tăng hiệu suất
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer # String-serializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer # Java Object -> JSON
+#      acks: all # đảm bảo tất cả các replica xác nhận
+#      retries: 3 # tự retry khi fail
+#      batch-size: 16384 # gom batch trước khi gửi // tăng hiệu suất
       # (optional) bọc thêm type info vào Header để bên kia biết class gì
-      linger-ms: 10 # chờ gom batch 10ms trước khi gửi
-      compression-type: snappy # nén message trước khi gửi //snappy/gzip/lz4
+#      linger-ms: 10 # chờ gom batch 10ms trước khi gửi
+#      compression-type: snappy # nén message trước khi gửi //snappy/gzip/lz4
       properties:
         spring.json.add.type.headers: true
-        enable.idempotence: true # tránh duplicate message
+#        enable.idempotence: true # tránh duplicate message
 
   # cloud + openfeing
   cloud:

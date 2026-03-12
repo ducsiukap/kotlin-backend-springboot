@@ -13,48 +13,100 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_log:/var/lib/rabbitmq
 
-  # Kafka
-  # với phiên bản cũ, kafka cần zookeeper
-  #  zookeeper:
-  #    image: confluentinc/cp-zookeeper
-  #    environment:
-  #      ZOOKEEPER_CLIENT_PORT: 2181
+  # Kafka-KRaft
   kafka:
     image: apache/kafka:latest
     ports:
-      - "9092:9092"
+      - "9092:9092" # Internal communicate (within Docker network)
+      - "9094:9094" # External communicate (with localhost machine)
     environment:
-      # KRaft
+      # --------- KRaft metadata & Node Identity ---------
+      # __________________________________________________
+      # CLUSTER_ID: nhóm nhiều Kafka broker hoạt động cùng nhau.
+      #   + quản lý: metadata của cluster
+      KAFKA_CLUSTER_ID: 'W81MS10BTyiCv-5VKd6fBA' # Kafka cluster unique ID (required for Kafka mode)
+      # NODE_ID: Kafka node unique id
+      #   + Mỗi broker -> 1 kafka node
       KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller # KRaft: vừa là broker, vừa là controller
+      # PROCESS_ROLE:
+      #   + broker: lưu trữ dữ liệu
+      #   + controller: quản lí trạng thái cluster (thay cho zookeeper)
+      # do chỉ sử dụng 1 node nên đảm nhiệm cả broker và controller
+      # thực tế:
+      #   + node1 -> controller
+      #   + node2 -> broker
+      #   + node... -> broker
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+
+      # --------- Controller Quorum Configuration ---------
+      # Cấu hình thuật toán đồng thuận Raft
+      # __________________________________________________
+      # CONTROLLER_QUORUM_VOTERS: List of controller nodes that form the Raft quorum // người bỏ phiếu
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER' # name used by controllers
+
+      # --------- Network Listeners ---------
+      # __________________________________________________
+      # LISTERNER: listeners endpoints for this Kafka node:
+      #   + PLAINTEXT: giao tiếp nội bộ Docker container
+      #   + EXTERNAL: cho phép máy host bên ngoài giao tiếp
+      #   + CONTROLLER: Raft controller
+      # 0.0.0.0 -> listen tất cả network interface.
+      KAFKA_LISTENERS: >
+        INTERNAL://0.0.0.0:9092, 
+        EXTERNAL://0.0.0.0:9094,
+        CONTROLLER://0.0.0.0:9093
+      # ADVERTISED_LISTENER: địa chỉ trả về khi kafka client connect tới
+      KAFKA_ADVERTISED_LISTENERS: >
+        INTERNAL://kafka:9092,
+        EXTERNAL://localhost:9094
+      # LISTENER_SECURITY_PROTOCOL_MAP: map listener name to their sercurity protocol
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: >
+        INTERNAL:PLAINTEXT,
+        EXTERNAL:PLAINTEXT,
+        CONTROLLER:PLAINTEXT
+      # INTER_BROKER_LISTENER_NAME: listener brokers used for intenal communicate
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+
+      # --------- Single-Node Cluster Safety setting ---------
+      # vì là single node nên chỉ có thể có 1 replication
+      # __________________________________________________
+      # OFFSETS_TOPIC_REPLICATION_FACTOR: số replication
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      # cho phép tự tạo topic khi có người publish mà chưa khai báo trước
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1 # ISR: In Sync Replica
+
+      # --------- Broker Defaults & Quality-of-Life Settings ---------
+      # __________________________________________________
+      # Speed up consumer group startup -> consumer group start ngay
+      # default 3s delay
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # cho phép tự tạo topic khi producer gửi mà topic chưa có trước
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      # for zookeeper
-      #      - KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      #      - KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-#    volumes:
-#     - kafka-data:/var/lib/kafka/data
+      # NUM_PARTITIONS: default amount of partition per topic
+      KAFKA_NUM_PARTITIONS: 1
+
+    # Phân vùng:
+    volumes:
+      # ánh xạ kafka data: `/var/lib/kafka/data` -> topic, partitions, logs
+      # ra `./docker/kafka/data`
+      - ./docker/kafka_data:/var/lib/kafka/data
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     depends_on:
       - kafka
     ports:
-      - "9090:8080"
+      - "8070:8080" # http://localhost:8070
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092 # use internal docker network
+      DYNAMIC_CONFIG_ENABLED: 'true' # enable add cluste from UI
+    restart: unless-stopped
 
 volumes:
   # rabbitmq
   rabbitmq_data:
   rabbitmq_log:
   # kafka
-#  kafka_data:
+  kafka_data:

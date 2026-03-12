@@ -41,4 +41,4 @@ Producer -> Broker -> Consumers
 ## **2. _Roadmap_**
 
 - **RabbitMQ**: [RabbitMQ.md](./RabbitMQ.md)
-- **Kafka**: [Kafka.md](./Kafka.md)
+- **Kafka**: [Kafka.md](./kafka/Kafka.md)

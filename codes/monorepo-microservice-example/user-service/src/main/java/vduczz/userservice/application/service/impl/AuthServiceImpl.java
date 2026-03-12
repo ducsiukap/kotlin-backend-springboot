@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 import org.springframework.stereotype.Service;
 import vduczz.userservice.application.dto.request.AuthRequestDto;
 import vduczz.userservice.application.dto.response.AuthResponseDto;
@@ -37,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
 
     // injects KafkaTemplate to send Kafka message
     private final KafkaTemplate<String, Object> kafkaTemplate;
+//    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Transactional(rollbackOn = Exception.class)
     @Override
@@ -56,26 +58,25 @@ public class AuthServiceImpl implements AuthService {
         Account account = accountDomainService.createAccount(request.getName(), email, password);
 
         // save to db
-        Account newAccount = accountRepository.save(account);
+        //        Account newAccount = accountRepository.save(account);
 
         // message to communicate
         WelcomeMailRequest message =
                 new WelcomeMailRequest(
                         email.email(),
-                        newAccount.getName()
+                        account.getName()
                 );
 
         if (mq || kafka) {
             // ------------------------------------------------------------
             // Asynchronous
 
-            String messageId = UUID.randomUUID().toString();
+            // Message Key
+            String messageId = account.getId().toString();
+            // nên dựa vào id object gửi đi, ...
 
             // CorrelationData -> message identify
-            CorrelationData correlationData = new CorrelationData(
-                    // nên dựa vào object gửi đi, ...
-                    messageId
-            );
+            CorrelationData correlationData = new CorrelationData(messageId);
 
             if (mq) { // RabbitMQ
                 rabbitTemplate.convertAndSend(
@@ -139,7 +140,7 @@ public class AuthServiceImpl implements AuthService {
         // return
         return AuthResponseDto.builder()
                 .userId("helo")
-                .accountId(newAccount.getId())
+                .accountId(account.getId())
                 .build();
     }
 }

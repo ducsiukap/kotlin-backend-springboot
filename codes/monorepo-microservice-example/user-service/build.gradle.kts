@@ -45,7 +45,7 @@ dependencies {
     // Synchronous communication
     // + Jackson Databind (for Spring Boot 4.0.3)
     //      starter-web đã có sẵn jackson-databind rồi
-    implementation("com.fasterxml.jackson.core:jackson-databind")
+    // implementation("com.fasterxml.jackson.core:jackson-databind")
     // rabbitmq
     implementation("org.springframework.boot:spring-boot-starter-amqp")
     // kafka

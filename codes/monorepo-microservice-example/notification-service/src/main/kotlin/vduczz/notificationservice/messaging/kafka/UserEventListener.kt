@@ -16,19 +16,19 @@ import vduczz.notificationservice.service.NotificationService
 @KafkaListener(
     topics = [KafkaConsumeConstants.UserEvents.USER_EVENTS_TOPIC],
     groupId = KafkaConsumeConstants.GROUP_ID,
-//    containerFactory = "",
 )
 class UserEventListener(
     private val notificationService: NotificationService
 ) {
 
+    // ____________________ @Payload Matching Specific Type ____________________ //
     @KafkaHandler // handle 1 loại message type
     fun handleUserCreateEvent(
         @Payload
         request: WelcomeMailRequest, // JSON parse chính xác -> match
     ) {
-        println("check")
-        notificationService.sendWelcomeMail(request);
+        // notificationService.sendWelcomeMail(request);
+        println("receive event: $request")
     }
 
     // ____________________ Default Handler ____________________ //
@@ -36,7 +36,7 @@ class UserEventListener(
     // bắt buộc hứng để tránh lỗi
     //  => sử dụng cho các message mà nó không quan tâm
     @KafkaHandler(isDefault = true)
-    fun handleUnknowMessaage(
+    fun handleUnknowMessage(
         @Payload
         payload: Any, // payload only
 
@@ -48,9 +48,6 @@ class UserEventListener(
         // full-message
         message: ConsumerRecord<String, Any>
     ) {
-        // do smth
-        println("Hello World :)")
-        println(payload)
-        println("${payload::class.java.name}")
+        println("[Default Handler] receive event: $message ")
     }
 }
