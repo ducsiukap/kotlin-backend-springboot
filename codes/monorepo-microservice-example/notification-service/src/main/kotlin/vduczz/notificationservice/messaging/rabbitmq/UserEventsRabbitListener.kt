@@ -2,18 +2,16 @@ package vduczz.notificationservice.messaging.rabbitmq
 
 import com.rabbitmq.client.Channel
 import org.springframework.amqp.core.Message
-import org.springframework.amqp.rabbit.annotation.Exchange
-import org.springframework.amqp.rabbit.annotation.Queue
-import org.springframework.amqp.rabbit.annotation.QueueBinding
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Component
-import vduczz.notificationservice.config.RabbitMQConstants
+import vduczz.notificationservice.config.RabbitListenerFromUserConfig
 import vduczz.notificationservice.controller.dto.WelcomeMailRequest
+import vduczz.notificationservice.controller.dto.WelcomeMailRequest2
 import vduczz.notificationservice.service.NotificationService
 
 @Component // Bean
-class UserEventsListener(
+class UserEventsRabbitListener(
     private val notificationService: NotificationService
 ) {
 
@@ -24,7 +22,7 @@ class UserEventsListener(
     // Sử dụng @RabbitListener
     @RabbitListener(
         queues = [
-            RabbitMQConstants.ListenerQueue.USER__NOTIFICATION_WELCOME_QUEUE// Nên config queue ở application.yaml
+            RabbitListenerFromUserConfig.QUEUE_V1// Nên config queue ở application.yaml
         ]
     )
     fun handleUserCreateEvent(
@@ -44,57 +42,24 @@ class UserEventsListener(
         // + Channel -> manual ack-mode
         channel: Channel  //com.rabbitmq.client.Channel
     ) {
+        println("RabbitMQ")
         // ack-mode: AUTO
         notificationService.sendWelcomeMail(request = request)
         // + kết thúc hàm không gặp lỗi => ACK
         // + kết thúc hàm gặp lỗi -> NACK + requeue
         //      => để tránh requeue infinite loop, cần kết hợp config max-retires
+    }
 
-        // example MANUAL ack-mode
-        //        tag
-        //        val deliveryTag = message.messageProperties.deliveryTag
-        //
-        //        // số lần retries
-        //        val retryCount = message.messageProperties
-        //            .headers
-        //            .getOrDefault("x-retry-count", 0) as Int
-        //
-        //        runCatching { // try-catch
-        //
-        //            // logics, call services, ...
-        //
-        //            // manual ack confirm
-        //            channel.basicAck(
-        //                deliveryTag, // deliveryTag: số thứ tự của message
-        //
-        //                // multiple:
-        //                false
-        //                // false: chỉ xác nhận message có tag này
-        //                // true: xác nhận toàn bộ message chưa ACK tính tới thời điểm tag này
-        //            )
-        //        }.onFailure { ex ->
-        //
-        //            ///
-        //
-        //            // create variable: val maxRetires=3
-        //            // if (retryCount < maxRetires) ...
-        //            if (retryCount < 3) {
-        //                message.messageProperties.headers["x-retry-count"] = retryCount + 1
-        //                channel.basicNack(
-        //                    deliveryTag, // deliveryTag
-        //                    false, // multiple
-        //                    true // requeue?
-        //                )
-        //            } else {
-        //                // reaches to max-retries
-        //                // ....
-        //                channel.basicNack(
-        //                    deliveryTag,
-        //                    false,
-        //                    false // không requeue -> Spring gọi MessageRecoverer -> DLQ
-        //                )
-        //            }
-        //        }
+    @RabbitListener(
+        queues = [
+            RabbitListenerFromUserConfig.QUEUE_V2// Nên config queue ở application.yaml
+        ]
+    )
+    fun handleUserCreateEvent(
+        request: WelcomeMailRequest2,
+    ) {
+        println("RabbitMQ-2")
+//        notificationService.sendWelcomeMail(request = request)
     }
 
     // Hứng message từ DLQ (optional)
@@ -102,7 +67,7 @@ class UserEventsListener(
     @RabbitListener(
         // sử dụng Queue & Binding đã config
         queues = [
-            RabbitMQConstants.ListenerQueue.USER__NOTIFICATION_WELCOME_DLQ
+            RabbitListenerFromUserConfig.DLQ_NOTIFICATION_V1
         ]
 
         // (Optional)
@@ -124,6 +89,17 @@ class UserEventsListener(
         val reason = failedMessage.messageProperties.headers["x-exception-message"];
         // val trace = failedMessage.messageProperties.headers["x-exception-stacktrace"];
 
+        // log...
+        println("Failed Message: $reason")
+    }
+
+    @RabbitListener(
+        queues = [
+            RabbitListenerFromUserConfig.DLQ_NOTIFICATION_V2
+        ]
+    )
+    fun handleDeadLetter2(failedMessage: Message) {
+        val reason = failedMessage.messageProperties.headers["x-exception-message"];
         // log...
         println("Failed Message: $reason")
     }

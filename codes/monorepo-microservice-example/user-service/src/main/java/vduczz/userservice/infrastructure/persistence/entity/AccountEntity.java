@@ -2,6 +2,8 @@ package vduczz.userservice.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.domain.Persistable;
 import vduczz.userservice.domain.model.Account;
 
@@ -16,7 +18,8 @@ import java.util.UUID;
 public class AccountEntity extends BaseEntity implements Persistable<UUID> {
     @Id
     // không @GeneratedValue
-    @Column(columnDefinition = "BINARY(36)", updatable = false)
+    @Column(columnDefinition = "CHAR(36)", updatable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private UUID id; // UUID chuẩn có 36 kí tự
 
     @Column(nullable = false)

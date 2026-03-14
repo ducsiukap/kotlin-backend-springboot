@@ -1,76 +1,94 @@
 package vduczz.userservice.infrastructure.config.messagequeue.kafka;
+//
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
-import org.springframework.boot.ssl.SslBundles;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.config.TopicBuilder;
+
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.mapping.DefaultJacksonJavaTypeMapper;
 import org.springframework.kafka.support.mapping.JacksonJavaTypeMapper;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
-import vduczz.userservice.infrastructure.client.dto.WelcomeMailRequest;
+import vduczz.userservice.application.port.out.gateway.dto.request.WelcomeMailRequest;
+import vduczz.userservice.domain.event.user.AccountCreatedEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 
+//
 @Configuration
 @RequiredArgsConstructor
 public class KafkaProducerConfig {
 
+    // kafka auto-config in application.yaml
     private final KafkaProperties kafkaProperties;
 
-    // ____________________ TypeMapping ____________________ //
+    /* ========================================
+    * CREATE NEW KAFKA TOPIC
+    ======================================== */
+    @Bean
+    public NewTopic userEventsTopic() {
+        return TopicBuilder
+                .name(KafkaProduceConstants.UserEvents.USER_EVENTS_TOPIC)
+                .partitions(3) // 3 partition -> parallel processing
+                .replicas(1) // 1 replica
+                .build();
+    }
+
+
+    /* ========================================
+    * TYPE-MAPPER for JacksonJsonSerializer
+    ======================================== */
+    // -------------------------
+    // TYPE-MAPPER
     @Bean
     public DefaultJacksonJavaTypeMapper typeMapper() {
-        // Bean to create TypeMapper
+        DefaultJacksonJavaTypeMapper typeMapper =
+                new DefaultJacksonJavaTypeMapper(); // init TypeMapper
+        typeMapper.setTypePrecedence( // => ưu tiên sử dụng type header
+                JacksonJavaTypeMapper.TypePrecedence.TYPE_ID // __TypeId__
+        );
+        typeMapper.setClassIdFieldName("x-event-type"); // Đổi __TypeId__ -> x-event-type
 
-        // init TypeMapper
-        DefaultJacksonJavaTypeMapper typeMapper = new DefaultJacksonJavaTypeMapper();
-
-        // => ưu tiên sử dụng type header // __TypeId__
-        typeMapper.setTypePrecedence(JacksonJavaTypeMapper.TypePrecedence.TYPE_ID);
-
-        // mappings
-        Map<String, Class<?>> mappings = new HashMap<>();
+        Map<String, Class<?>> mappings = new HashMap<>(); // mappings alias <-> type
         // put(alias, FQN)
         mappings.put(
-                KafkaProduceConstants.UserEvents.EventTypes.USER_CREATED_V1,
-                WelcomeMailRequest.class
+                KafkaProduceConstants.UserEvents.EventTypes.USER_CREATED_V1, // alias
+                WelcomeMailRequest.class // Type (FQN)
         );
-        // put more ...
+        mappings.put(
+                KafkaProduceConstants.UserEvents.EventTypes.USER_CREATED_V2,
+                AccountCreatedEvent.class
+        );
 
-        // __TypeId__ -> Class
-        typeMapper.setIdClassMapping(mappings);
-
+        typeMapper.setIdClassMapping(mappings); // __TypeId__ -> Class
         return typeMapper;
     }
 
-    // Sử dụng TypeMapper trong ProducerFactory
+    // -------------------------
+    // BEAN TO CUSTOM ProducerFactory (CUSTOM PRODUCER CONFIG)
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
-        // Bean to custom config producer - ProducerFactory
+        Map<String, Object> configProps
+                = kafkaProperties.buildProducerProperties(); // auto-config cho producer
 
-        // sử dụng các config có sẵn trong application.yaml
-        Map<String, Object> configProps = kafkaProperties.buildProducerProperties(); // chỉ sử dụng các thuộc tính cho producer
-
-        // init serializer
-        JacksonJsonSerializer<Object> serializer = new JacksonJsonSerializer<>();
+        JacksonJsonSerializer<Object> serializer = new JacksonJsonSerializer<>(); // init serializer
         serializer.setTypeMapper(typeMapper()); // addTypeMapper -> spring.json.type.mapper
         serializer.setAddTypeInfo(true); // addTypeInfo -> spring.json.add.type.headers
         // nguyên tắc: 1 thuộc tính chỉ có thể được khởi tạo giá trị thông qua:
         //      + serializer.set...()
         //      + hoặc, config trong application.yaml
         // tức là chỉ setABC() hoặc config abc trong yaml, không được cả 2
-        // example
         configProps.remove("spring.json.add.type.headers");
         configProps.remove("spring.json.type.mapping");
-
 
         return new DefaultKafkaProducerFactory<>(
                 configProps, // config có sẵn trong yaml
@@ -79,21 +97,25 @@ public class KafkaProducerConfig {
         );
     }
 
+    // -------------------------
+    // BEAN TO DEFINE KafkaTemplate BASED ON CUSTOM PRODUCER CONFIG (above)
     @Bean
-    // sử dụng custom ProducerFactory cho KafkaTemplate
+    @Primary
     public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
-
-    // ____________________ Create Topic ____________________ //
-    // Tạo topic tự động với partition và replication factor
-    @Bean
-    public NewTopic userEventsTopic() {
-        return TopicBuilder
-            .name(KafkaProduceConstants.UserEvents.USER_EVENTS_TOPIC)
-                .partitions(3) // 3 partition -> parallel processing
-                .replicas(1) // 1 replica
-                .build();
+    /* ========================================
+    * CREATE KafkaTemplate<String, String>  => KHÔNG JsonSerialize, KHÔNG TypeHeader
+    ======================================== */
+    @Bean("stringKafkaTemplate")
+    public KafkaTemplate<String, String> stringKafkaTemplate() {
+        var producerProps = kafkaProperties.buildProducerProperties();
+        var producerFactory = new DefaultKafkaProducerFactory<>(
+                producerProps,
+                new StringSerializer(),
+                new StringSerializer() // value-serializer
+        );
+        return new KafkaTemplate<>(producerFactory);
     }
 }

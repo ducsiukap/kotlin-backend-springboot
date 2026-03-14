@@ -6,10 +6,9 @@ import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 import org.springframework.stereotype.Service;
-import vduczz.userservice.application.dto.request.AuthRequestDto;
-import vduczz.userservice.application.dto.response.AuthResponseDto;
+import vduczz.userservice.application.port.in.dto.request.AuthRequestDto;
+import vduczz.userservice.application.port.in.dto.response.AuthResponseDto;
 import vduczz.userservice.application.service.AuthService;
 import vduczz.userservice.domain.model.Account;
 import vduczz.userservice.domain.model.Email;
@@ -17,11 +16,11 @@ import vduczz.userservice.domain.model.Password;
 import vduczz.userservice.domain.repository.AccountRepository;
 import vduczz.userservice.domain.service.AccountDomainService;
 import vduczz.userservice.infrastructure.client.NotificationClient;
-import vduczz.userservice.infrastructure.client.dto.WelcomeMailRequest;
-import vduczz.userservice.infrastructure.config.messagequeue.RabbitMQConfig;
+import vduczz.userservice.application.port.out.gateway.dto.request.WelcomeMailRequest;
+import vduczz.userservice.infrastructure.config.messagequeue.rabbitmq.RabbitMQConstant;
+import vduczz.userservice.infrastructure.config.messagequeue.rabbitmq.RabbitNotificationConfig;
 import vduczz.userservice.infrastructure.config.messagequeue.kafka.KafkaProduceConstants;
 
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
@@ -37,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final RabbitTemplate rabbitTemplate;
 
     // injects KafkaTemplate to send Kafka message
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, Object> objectKafkaTemplate;
 //    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Transactional(rollbackOn = Exception.class)
@@ -80,8 +79,8 @@ public class AuthServiceImpl implements AuthService {
 
             if (mq) { // RabbitMQ
                 rabbitTemplate.convertAndSend(
-                        RabbitMQConfig.EXCHANGE, // Exchange
-                        RabbitMQConfig.ROUTING_KEY, // Key
+                        RabbitMQConstant.Exchanges.EXCHANGE, // Exchange
+                        RabbitMQConstant.RoutingKeys.ROUTING_KEY_V1, // Key
                         // Exchange + Key = Queue(s)
 
                         // message
@@ -96,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
             if (kafka) { // Kafka
                 try {
                     // CompletableFuture => chạy async
-                    CompletableFuture<SendResult<String, Object>> failure = kafkaTemplate.send(
+                    CompletableFuture<SendResult<String, Object>> failure = objectKafkaTemplate.send(
                             KafkaProduceConstants.UserEvents.USER_EVENTS_TOPIC, // topic
                             messageId,// key, với multi-types message per topic, key should be entity.id
                             message// value
@@ -139,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
 
         // return
         return AuthResponseDto.builder()
-                .userId("helo")
+                .userId(account.getId())
                 .accountId(account.getId())
                 .build();
     }

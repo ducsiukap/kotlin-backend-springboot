@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import vduczz.userservice.application.dto.response.ErrorResponse;
+import vduczz.userservice.application.port.in.dto.response.ErrorResponse;
 import vduczz.userservice.domain.exception.BaseException;
 import vduczz.userservice.domain.exception.code.ErrorCode;
 

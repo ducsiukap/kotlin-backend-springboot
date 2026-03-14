@@ -82,7 +82,7 @@ Khác với **RabbitMQ** là **Message Queue** / **Message Broker**, `Kafka` là
 └──────────────┘                    └──────────────────────┘
 ```
 
-## **`2.` Triển khai _`Kafka`_** : [Implement Kafka]=
+## **`2.` Triển khai _`Kafka`_** :
 
 ### **`2.1.` Setup Kafka _Broker_ in _Docker_**
 
@@ -238,12 +238,8 @@ spring:
 
 ---
 
-### **`2.4.` Triển khai `producer` & `consumer`**
+### **`2.4.` Triển khai `producer` & `consumer`**: [Xem chi tiết](./Implementation.md)
 
-Phụ thuộc vào việc **`Serializer`**/**`Deserializer`**, có một số cách triển khai:
-
-- #### `string-based` messaging: [string-based messaging](./StringBasedMessage.md)
-- #### `json-based` messaging: [json-based messaging](./json-based/readme.md)
 
 ---
 
