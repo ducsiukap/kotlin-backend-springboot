@@ -1,4 +1,7 @@
 app:
+  outbox:
+    kafka:
+      poll-interval-ms: 3000
   client:
     notification-service:
       url: http://localhost:8081 # notification-service
@@ -32,24 +35,24 @@ spring:
     publisher-confirm-type: correlated # Đảm bỏa message không mất phía producer
     publisher-returns:
       true # không tìm đc queue -> RabbitMQ trả message ngược về producer
-      # với returns=true -> cần config callback trong code để xử lý message trả về
+    # với returns=true -> cần config callback trong code để xử lý message trả về
 
   # kafka
   kafka:
     bootstrap-servers: localhost:9094
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      value-serializer: org.apache.kafka.common.serialization.StringSerializer # String-serializer
+      # value-serializer: org.apache.kafka.common.serialization.StringSerializer # String-serializer
       value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer # Java Object -> JSON
-#      acks: all # đảm bảo tất cả các replica xác nhận
-#      retries: 3 # tự retry khi fail
-#      batch-size: 16384 # gom batch trước khi gửi // tăng hiệu suất
-      # (optional) bọc thêm type info vào Header để bên kia biết class gì
-#      linger-ms: 10 # chờ gom batch 10ms trước khi gửi
-#      compression-type: snappy # nén message trước khi gửi //snappy/gzip/lz4
+      #      acks: all # đảm bảo tất cả các replica xác nhận
+      #      retries: 3 # tự retry khi fail
+      #      batch-size: 16384 # gom batch trước khi gửi // tăng hiệu suất
+      #      # (optional) bọc thêm type info vào Header để bên kia biết class gì
+      #      linger-ms: 10 # chờ gom batch 10ms trước khi gửi
+      #      compression-type: snappy # nén message trước khi gửi //snappy/gzip/lz4
       properties:
         spring.json.add.type.headers: true
-#        enable.idempotence: true # tránh duplicate message
+        enable.idempotence: true # tránh duplicate message
 
   # cloud + openfeing
   cloud:

@@ -1,4 +1,4 @@
-package vduczz.userservice.application.dto.response;
+package vduczz.userservice.application.port.in.dto.response;
 
 import lombok.Builder;
 
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Builder
 public record AuthResponseDto(
-        String userId,
+        UUID userId,
         UUID accountId
 ) {
 }

@@ -1,4 +1,4 @@
-package vduczz.userservice.application.dto.request;
+package vduczz.userservice.application.port.in.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

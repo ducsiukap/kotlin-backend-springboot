@@ -1,4 +1,4 @@
-package vduczz.userservice.application.dto.response;
+package vduczz.userservice.application.port.in.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

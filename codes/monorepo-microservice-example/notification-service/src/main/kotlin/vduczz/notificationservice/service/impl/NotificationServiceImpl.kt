@@ -34,5 +34,7 @@ class NotificationServiceImpl(
             // log
             println("failed: ${ex.message}")
         }
+
+        println("[RabbitMQ] Welcome ${request.name}")
     }
 }

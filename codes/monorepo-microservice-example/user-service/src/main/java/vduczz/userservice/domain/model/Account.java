@@ -1,19 +1,24 @@
 package vduczz.userservice.domain.model;
 
 import lombok.Getter;
+import lombok.val;
+import vduczz.userservice.domain.event.user.AccountCreatedEvent;
 import vduczz.userservice.domain.exception.auth.PasswordContainingNameException;
 import vduczz.userservice.domain.exception.auth.SameEmailException;
 import vduczz.userservice.domain.exception.auth.SamePasswordException;
 import vduczz.userservice.domain.exception.common.InvalidArgumentException;
+import vduczz.userservice.infrastructure.persistence.entity.BaseEntity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static vduczz.userservice.domain.utils.Utilities.normalizeString;
 
 // Model
 @Getter
-public class Account {
+public class Account extends AggregateRoot {
     private final UUID id;
     private String name;
     private Password password;
@@ -24,6 +29,18 @@ public class Account {
         this.name = name;
         this.password = password;
         this.email = email;
+    }
+
+    // ____________________ Aggregate Identity ____________________ //
+
+    @Override
+    public UUID getAggregateId() {
+        return this.id;
+    }
+
+    @Override
+    public String getAggregateType() {
+        return this.getClass().getSimpleName();
     }
 
     // ------------------------------------------------------------
@@ -67,9 +84,20 @@ public class Account {
 
         if (email == null) throw new InvalidArgumentException("email");
 
-        return new Account(
+        Account account = new Account(
                 UUID.randomUUID(), // Quyền sinh ID ở domain, bỏ GeneratedValue ở DB entity
                 name, email, password);
+
+        // ____________________ Create thành công -> có thể tạo event ____________________ //
+        // => Thêm event vào List
+        account.registerEvent(AccountCreatedEvent.create(
+                account.id,
+                account.name,
+                account.email.email()
+        ));
+
+        // trả account về service
+        return account;
     }
 
     // getter
@@ -81,11 +109,15 @@ public class Account {
         if (this.email.equals(email))
             throw new SameEmailException();
         this.email = email;
+
+        // thêm event change email
     }
 
     public void changeName(String name) {
         validateNameAndPassword(name, this.password);
         this.name = name.trim();
+
+        // thêm event..
     }
 
     public void changePassword(Password password) {

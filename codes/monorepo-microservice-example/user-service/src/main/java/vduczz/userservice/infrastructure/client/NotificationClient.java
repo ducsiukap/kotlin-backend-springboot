@@ -2,10 +2,9 @@ package vduczz.userservice.infrastructure.client;
 
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import vduczz.userservice.infrastructure.client.dto.WelcomeMailRequest;
+import vduczz.userservice.application.port.out.gateway.dto.request.WelcomeMailRequest;
 import vduczz.userservice.infrastructure.config.feign.FeignConfig;
 
 @FeignClient(

@@ -6,6 +6,7 @@ object KafkaConsumeConstants {
 
         object EventTypes {
             const val USER_CREATED_V1 = "user.created.v1"
+            const val USER_CREATED_V2 = "user.created.v2"
         }
     }
 

@@ -41,7 +41,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:9094
     consumer:
-      auto-offset-reset: earliest
+      auto-offset-reset: latest
       # earliest: đọc từ đầu nếu chưa có offset
       # latest (default): đọc message mới từ khi start
 
@@ -55,7 +55,7 @@ spring:
         # trust all package
         # => cho phép Jackson deserialize từ bất kì package nào
         spring.json.trusted.packages: "*"
-
+        spring.json.type.header.name: "x-event-type"
         # hỗ trợ JsonDeserialize
         #        spring.json.type.mapping: >
         #          welcome_mail_message: vduczz.notificationservice.controller.dto.WelcomeMailReques
