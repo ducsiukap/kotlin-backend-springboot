@@ -51,6 +51,15 @@ dependencies {
     // kafka
     // implementation("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.boot:spring-boot-starter-kafka")
+
+    // circruit-breaker
+    // implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j") // Spring Cloud CB
+    // ----
+    // Native Spring Boot autoconfiguration Resilience4j
+    implementation("io.github.resilience4j:resilience4j-spring-boot3")
+    // BẮT BUỘC PHẢI CÓ: AOP để các Annotation (@CircuitBreaker, @Retry) hoạt động được
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-actuator") // Actuator
 }
 
 // Spring Cloud BOM

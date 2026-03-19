@@ -57,6 +57,8 @@ spring:
   # cloud + openfeing
   cloud:
     openfeign:
+      circuitbreaker:
+        enabled: false # tắt Feign CB
       client:
         config:
           notification-service: # matches with @FeignClient(name=...)
@@ -75,6 +77,62 @@ spring:
           # + cho từng service
           # order-service:
           #  logger-level: HEADERS
+
+
+# Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      notification-service: # config instance có id = "notification-service"
+        register-health-indicator: true # actuator
+        sliding-window-size: 10 # lấy 10 request để tính failure rate
+        minimum-number-of-calls: 5 # phải đủ 5 request mới bắt đầu đánh giá lỗi
+        failure-rate-threshold: 50 # tỉ lệ lỗi >50% -> OPEN
+        slow-call-rate-threshold: 50 # tỉ lệ request chậm >50% -> OPEN
+        slow-call-duration-threshold: 3s # request >3s -> slow
+        wait-duration-in-open-state: 30s # khi OPEN, tạm dừng gọi notification-service trong 30s
+        permitted-number-of-calls-in-half-open-state: 3 # HALF_OPEN sử dụng 3 request để test
+        automatic-transition-from-open-to-half-open-enabled: true # tự động chuyển  OPEN -> HALF_OPEN sau 30s chờ
+
+        # exceptions
+        record-exceptions: # các exception tính là lỗi -> tăng failure rate
+          - java.lang.Exception
+        ignore-class-binding-exceptions: # các exception được bỏ qua, không tính là lỗi
+        # ...
+
+  # retry
+  retry:
+    instances:
+      notification-service:
+        max-attempts: 3 # chạy tối đa 3 lần (tính cả lần đầu request)
+        wait-duration: 2s # mỗi lần thử cách nhau 2s
+        retry-exceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+        ignore-exceptions:
+        # ...
+
+  bulkhead: # giới hạn số request chạy đồng thời
+    instances:
+      notification-service:
+        max-concurrent-calls: 10 # tối đa gửi 10 request đồng thời sang notification-service
+        max-wait-duration: 100ms # khi queue đầy, chờ tối đa 100ms rồi reject
+
+  timelimiter: # timeout
+    instances:
+      notification-service:
+        timeout-duration: 5s
+        cancel-running-future: true
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, circuitbreakers, circuitbreakerevents, retries
+  health:
+    circuitbreakers:
+      enabled: true
 
 # enable logging kiểu cũ
 logging:

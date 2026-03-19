@@ -11,7 +11,8 @@ Create [`monorepo`](/codes/monorepo-microservice-example/) project::
 
 3. [Communication-style](./communications/README.md)
 4. [Asynchronous communication advanced](./async-communication-advanced/README.md)
-5. [Synchronous communication advanced]()
+5. [Synchronous communication advanced](./sync-communication-advanced/readme.md)
+
 ---
 
 ## **Contact**

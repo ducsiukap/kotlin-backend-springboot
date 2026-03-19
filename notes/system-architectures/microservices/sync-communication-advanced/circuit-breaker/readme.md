@@ -51,6 +51,6 @@ Thực tế, **rất ít khi** sử dụng nhiều `CB` trong 1 project nên **a
 
 ### **`2.2.` Triển khai**
 
-- Only `spring-cloud-starter-circuitbreaker-resilience4j`: [Details](./spring-cloud-starter-circuitbreaker-resilience4j/withoutOpenFeign.md)
+- **Only** `spring-cloud-starter-circuitbreaker-resilience4j`: [Details](./spring-cloud-starter-circuitbreaker-resilience4j/withoutOpenFeign.md)
 - `spring-cloud-starter-circuitbreaker-resilience4j` with `OpenFeign` (thường là đủ dùng nếu project chỉ dùng OpenFeign để gọi service ngoài): [Details](./spring-cloud-starter-circuitbreaker-resilience4j/withOpenFeign.md)
--
+- `resilience4j-spring-boot3` (native implements `Resilience4j`): [Details](./resilience4j-spring-boot3/readme.md)
