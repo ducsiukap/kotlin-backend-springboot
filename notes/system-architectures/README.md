@@ -72,7 +72,7 @@
     └─ Product Service
   ```
 
-  Details: [Microservice Architecture](./microservices/README.md)
+  Details: [Microservice Architecture](./micro-services/readme.md)
 
 - `Event-Driven Architecture` - **Kiến trúc hướng sự kiện**: các thành phần trong hệ thống không gọi nhau trực tiếp, ví dụ qua **API calls**.
 
