@@ -1,0 +1,55 @@
+server:
+  port: 8888 # config server chạy tại port 8888
+
+spring:
+  application:
+    name: config-server
+
+  cloud:
+    config:
+      server:
+        git:
+          # URI của config repo
+          # -> repo chứa các file config, không phải repo của config-server
+          uri: https://github.com/ducsiukap/config-repo-demo.git
+          # --- Local dev: dùng file:// trỏ vào thư mục local ---
+          # uri: file://${user.home}/config-repo
+          # --- Production: dùng Git repo thật ---
+          # uri: https://github.com/yourorg/coffee-shop-config # thường là private nên cần username, password
+          # username: ${GIT_USERNAME}
+          # password: ${GIT_TOKEN}
+
+          search-paths:
+            # {application} -> lấy từ spring.application.name -> ứng với service name, ex: user-service
+            - '{application}'
+            # Sử dụng khi file cấu hình nằm trong folder
+            # /user-service/user-service.yml or
+            # /user-service/user-service-{profile}.yml
+
+            - 'application' # nếu config chung nằm ở application/application.yml
+            # - '' # nếu config chung appication.yml nằm ở root
+            # Orders: ưu tiên theo thứ tự liệt kê
+
+          default-label: main # default branch
+
+          clone-on-start: true # clone về local khi start
+          refresh-rate: 30 # refresh từ Git mỗi 30s
+
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, refresh, busrefresh
+        # refresh: khi có thay đổi ở repo, cho phép gọi POST /actuator/refresh từ service A
+        #         để Config Server kéo bản mới nhất về và nạp lại các bean có đánh dấu @RefreshScope.
+        # busrefresh: cập nhật hàng loạt -> POST đến /actuator/busrefresh của một service bất kỳ, thường từ Config Server.
+        #         Service đó sẽ bắn một "thông điệp" (Event) vào Message Broker,
+        #         Tất cả các service khác đang lắng nghe trên Bus sẽ nhận được tin nhắn này
+        #         và tự động thực hiện quá trình refresh cho chính nó.
+  endpoint:
+    health:
+      show-details: always
+
+

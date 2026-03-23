@@ -1,12 +1,13 @@
 # _**Microservice**_ Architecture
 
-### [**1. Microservice Concept**](./microservice-architecture/readme.md)
+> _**Case study**: **`E-commerce mini`**_
+>
+> _5 microservices: `user-services`, `product-services`, `order-service`, `inventory-service`, `notification-service`_
 
+1. [**Microservice Concept**](./microservice-architecture/readme.md)
+2. [**Spring Cloud Ecosystem**](./spring-cloud/readme.md)
 
-----
-
-1. [Microservice Architecture concept](./MicroserviceArchitecture.md)
-2. [Domain-Driven Design - DDD](./ddd/README.md)
+---
 
 Create [`monorepo`](/codes/monorepo-microservice-example/) project::
 
