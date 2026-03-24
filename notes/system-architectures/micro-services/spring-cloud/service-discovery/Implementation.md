@@ -1,5 +1,9 @@
 # **Service Discovery _Implementation_ - `Eureka`**
 
+Example: https://spring.io/guides/gs/service-registration-and-discovery
+
+---
+
 ## **`1.` Service Dicovery - `Server`**
 
 Go to [Spring Initializr](https://start.spring.io/) to create a new project.
@@ -45,7 +49,7 @@ Go to [Spring Initializr](https://start.spring.io/) to create a new project.
 
 details: [config-repo/eureka-server](/codes/microservices/config-repo/eureka-server/)
 
-#### `1.2.3.` `@EnableEurekaServer`
+### `1.3.` `@EnableEurekaServer`
 
 details: [ServiceDiscoveryApplication.java](/codes/microservices/service-discovery/src/main/java/com/example/service_discovery/ServiceDiscoveryApplication.java)
 

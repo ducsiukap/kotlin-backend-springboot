@@ -18,29 +18,30 @@ repositories {
     mavenCentral()
 }
 
-extra["springCloudVersion"] = "2025.1.0"
+extra["springCloudVersion"] = "2025.1.1"
+val jjwtVersion = "0.13.0"
 
 dependencies {
-    // --- Gateway reactive ---
-    // spring-cloud-starter-gateway-server-webmvc // Web MVC -> TomCat
-    // spring-cloud-starter-gateway-server-webflux // WebFlux -> Sử dụng Netty thay cho TomCat
+    // Reactive API Gateway (Netty server): spring-cloud-starter-gateway-server-webflux
+    // MVC Server API Gateway (TomCat server): spring-cloud-starter-gateway-server-webmvc
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
-
-    // --- Actuator ---
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-
-    // --- Eureka client ---
-    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
-
-    // --- Config server client ---
     implementation("org.springframework.cloud:spring-cloud-starter-config")
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.retry:spring-retry")
+    // jjwt
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+    // circuit breaker
+    implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j")
+    // rate limits -> redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 
-    // Kotlin
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
-    // Test
     testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")

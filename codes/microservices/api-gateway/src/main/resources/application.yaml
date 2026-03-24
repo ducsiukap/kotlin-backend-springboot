@@ -1,23 +1,14 @@
-server:
-  port: 8080
-
 spring:
   application:
     name: api-gateway
 
-  # config server
   config:
     import: "configserver:http://localhost:8888"
 
   cloud:
-    gateway:
-      server:
-        webflux:
-          # Tự động tạo route từ Eureka service name
-          discovery:
-            locator:
-              enabled: true
-              lower-case-service-id: true
-          # Default filters áp dụng cho tất cả routes
-          default-filters:
-            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+    config:
+      fail-fast: true
+      retry:
+        max-attempts: 6
+        initial-interval: 1500
+        multiplier: 1.5
